@@ -1,0 +1,76 @@
+using UnityEngine;
+
+public class Sword : MonoBehaviour
+{
+    // * Parameters
+    [SerializeField] GameObject slashAnimPrefab;
+    [SerializeField] Transform slashAnimSpawnPoint;
+    // * Refs
+    private PlayerControls playerControls;
+    private Animator animator;
+    private PlayerController playerController;
+    private ActiveWeapon activeWeapon;
+
+    // * Variable
+    private GameObject slashAnim;
+
+    void Awake()
+    {
+        playerControls = new PlayerControls();
+        animator = GetComponent<Animator>();
+
+        activeWeapon = GetComponentInParent<ActiveWeapon>();
+        playerController = GetComponentInParent<PlayerController>();
+    }
+
+    void OnEnable()
+    {
+        playerControls.Enable();
+    }
+
+    void Start()
+    {
+        playerControls.Combat.Attack.started += _ => Attack();
+    }
+
+    void Update()
+    {
+        MouseFollowWithOffset();
+    }
+
+    void Attack () {
+        animator.SetTrigger("Attack");
+
+        slashAnim = Instantiate(slashAnimPrefab, slashAnimSpawnPoint.position, Quaternion.identity);
+        slashAnim.transform.parent = this.transform.parent;
+    }
+
+    public void SwingUpFlipAnim () {
+        slashAnim.gameObject.transform.rotation = Quaternion.Euler(-180, 0, 0);
+
+        if(playerController.FacingLeft) {
+            slashAnim.GetComponent<SpriteRenderer>().flipX = true;
+        }
+    }
+
+    public void SwingDownFlipAnim () {
+        slashAnim.gameObject.transform.rotation = Quaternion.Euler(0, 0, 0);
+
+        if(playerController.FacingLeft) {
+            slashAnim.GetComponent<SpriteRenderer>().flipX = true;
+        }
+    }
+
+    void MouseFollowWithOffset () {
+        Vector3 mousePos = Input.mousePosition;
+        Vector3 playerScreenPoint = Camera.main.WorldToScreenPoint(playerController.transform.position);
+
+        float angle = Mathf.Atan2(mousePos.y, mousePos.x) * Mathf.Rad2Deg;
+
+        if(mousePos.x < playerScreenPoint.x) {
+            activeWeapon.transform.rotation = Quaternion.Euler(0, -180, angle);
+        } else {
+            activeWeapon.transform.rotation = Quaternion.Euler(0, 0, angle);
+        }
+    }
+}
