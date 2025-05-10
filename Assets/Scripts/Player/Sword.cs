@@ -52,17 +52,20 @@ public class Sword : MonoBehaviour
     }
 
     void Attack () {
-        if (!attackButtonDown || isAttacking) return;
+        if (attackButtonDown && !isAttacking) {
+            animator.SetTrigger("Attack");
+            weaponCollider.gameObject.SetActive(true);
 
-        animator.SetTrigger("Attack");
-        weaponCollider.gameObject.SetActive(true);
-
-        slashAnim = Instantiate(slashAnimPrefab, slashAnimSpawnPoint.position, Quaternion.identity);
-        slashAnim.transform.parent = this.transform.parent;
-        // StartCoroutine(AttackCDRoutine());
+            slashAnim = Instantiate(slashAnimPrefab, slashAnimSpawnPoint.position, Quaternion.identity);
+            slashAnim.transform.parent = transform.parent;
+            StartCoroutine(AttackCDRoutine());
+        }
     }
 
-    // IEnumerator AttackCD
+    IEnumerator AttackCDRoutine () {
+        yield return new WaitForSeconds(swordAttackCD);
+        isAttacking = false;
+    }
 
     public void DoneAttackingAnimEvent () {
         weaponCollider.gameObject.SetActive(false);
